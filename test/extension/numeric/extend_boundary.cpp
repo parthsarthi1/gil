@@ -5,10 +5,8 @@
 // See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt
 //
-
-#define BOOST_TEST_MODULE test_ext_numeric_extend_boundary
+#define BOOST_TEST_MODULE gil/test/extension/numeric/extend_boundary
 #include "unit_test.hpp"
-#include "unit_test_utility.hpp"
 
 #include <boost/gil.hpp>
 #include <boost/gil/extension/numeric/algorithm.hpp>
