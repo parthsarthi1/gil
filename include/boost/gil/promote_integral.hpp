@@ -16,12 +16,9 @@
 #ifndef BOOST_GIL_PROMOTE_INTEGRAL_HPP
 #define BOOST_GIL_PROMOTE_INTEGRAL_HPP
 
-#include <boost/mpl/begin.hpp>
-#include <boost/mpl/deref.hpp>
-#include <boost/mpl/end.hpp>
-#include <boost/mpl/list.hpp>
-#include <boost/mpl/next.hpp>
-
+#include <boost/mp11/list.hpp>
+#include<boost/mp11/algorithm.hpp>
+#include <iterator>
 #include <climits>
 #include <cstddef>
 #include <type_traits>
@@ -53,7 +50,8 @@ template
 >
 struct promote_to_larger
 {
-    using current_type = typename boost::mpl::deref<Iterator>::type;
+    //using current_type = typename boost::mpl::deref<Iterator>::type;
+    using current_type = typename std::remove_reference<Iterator>::type;
 
     using type = typename std::conditional
         <
@@ -62,7 +60,9 @@ struct promote_to_larger
             typename promote_to_larger
                 <
                     T,
-                    typename boost::mpl::next<Iterator>::type,
+                    //typename boost::mpl::next<Iterator>::type,
+                    //typename std::iterator_traits<Iterator>::difference_type n = 1
+                    typename  boost::mp11::detail::mp_front_impl<Iterator>::type,
                     EndIterator,
                     MinSize
                 >::type
@@ -90,14 +90,14 @@ struct promote_to_larger<T, EndIterator, EndIterator, MinSize>
     to a another integral type with size (roughly) twice the bit size of T.
 
     To do this, two times the bit size of T is tested against the bit sizes of:
-         short, int, long, boost::long_long_type, boost::int128_t
+         short, int, long, boost::long_long_type
     and the one that first matches is chosen.
 
     For unsigned types the bit size of T is tested against the bit
     sizes of the types above, if T is promoted to a signed type, or
     the bit sizes of
          unsigned short, unsigned int, unsigned long, std::size_t,
-         boost::ulong_long_type, boost::uint128_t
+         boost::ulong_long_type
     if T is promoted to an unsigned type.
 
     By default an unsigned type is promoted to a signed type.
@@ -148,7 +148,7 @@ private:
 
     // Define the list of signed integral types we are going to use
     // for promotion
-    using signed_integral_types = boost::mpl::list
+    using signed_integral_types = boost::mp11::mp_list
         <
             short, int, long
 #if defined(BOOST_HAS_LONG_LONG)
@@ -158,7 +158,7 @@ private:
 
     // Define the list of unsigned integral types we are going to use
     // for promotion
-    using unsigned_integral_types = boost::mpl::list
+    using unsigned_integral_types = boost::mp11::mp_list
         <
             unsigned short, unsigned int, unsigned long, std::size_t
 #if defined(BOOST_HAS_LONG_LONG)
@@ -180,8 +180,9 @@ public:
     using type = typename detail::promote_integral::promote_to_larger
         <
             T,
-            typename boost::mpl::begin<integral_types>::type,
-            typename boost::mpl::end<integral_types>::type,
+            typename boost::mp11::detail::mp_front_impl<integral_types>::type,
+            //typename boost::mp11::end<integral_types>::type,
+            typename boost::mp11::detail::mp_at_c_impl<integral_types ,boost::mp11::mp_size<integral_types>::value -1>::type,
             min_bit_size_type::value
         >::type;
 };
